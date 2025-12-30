@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>For Yamuna</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;300;400;500&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap"
+        rel="stylesheet">
+
+    <!-- GSAP & Lenis -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+    <script src="https://unpkg.com/@studio-freight/lenis@1.0.35/dist/lenis.min.js"></script>
+
+    <style>
+        :root {
+            --bg-dark: #050511;
+            --bg-gradient: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            --text-main: #e0e0e0;
+            --text-highlight: #fff;
+            --accent: #a18cd1;
+            --glass: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --glow: 0 0 20px rgba(161, 140, 209, 0.15);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            background: var(--bg-gradient);
+            color: var(--text-main);
+            font-family: 'Outfit', sans-serif;
+            overflow-x: hidden;
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        h1,
+        h2,
+        h3 {
+            font-family: 'Playfair Display', serif;
+            font-weight: 400;
+        }
+
+        #canvas-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .scroll-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Navigation / Audio */
+        .nav-bar {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            z-index: 100;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .audio-btn {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            color: white;
+            padding: 0.8rem 1.5rem;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+        }
+
+        .audio-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            box-shadow: var(--glow);
+        }
+
+        /* Sections */
+        section {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            position: relative;
+            opacity: 0;
+            /* JS handles reveal */
+        }
+
+        .hero {
+            text-align: center;
+            height: 100vh;
+        }
+
+        .hero-title {
+            font-size: clamp(2rem, 5vw, 4rem);
+            line-height: 1.2;
+            margin-bottom: 2rem;
+            background: linear-gradient(to right, #fff, #a18cd1);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-subtitle {
+            font-size: 1.1rem;
+            opacity: 0.8;
+            max-width: 600px;
+            margin: 0 auto 3rem;
+            font-weight: 300;
+        }
+
+        .cta-btn {
+            display: inline-block;
+            padding: 1rem 2.5rem;
+            background: linear-gradient(45deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+            border: 1px solid var(--glass-border);
+            border-radius: 50px;
+            color: white;
+            text-decoration: none;
+            font-size: 0.9rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            backdrop-filter: blur(5px);
+            transition: transform 0.3s ease, background 0.3s ease;
+        }
+
+        .cta-btn:hover {
+            transform: scale(1.05);
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 0 30px rgba(161, 140, 209, 0.2);
+        }
+
+        /* Chat/Story Cards */
+        .story-container {
+            max-width: 600px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        .glass-card {
+            background: var(--glass);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            padding: 3rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            margin: 2rem 0;
+            transform: translateY(50px);
+            transition: transform 0.5s ease;
+        }
+
+        .card-content {
+            font-size: 1.25rem;
+            line-height: 1.8;
+            color: #d1d1d1;
+        }
+
+        .highlight-name {
+            color: #fff;
+            font-weight: 500;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+        }
+
+        /* Emotional Truth */
+        .emotional-truth {
+            text-align: center;
+            max-width: 800px;
+        }
+
+        .truth-text {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(1.5rem, 3vw, 2.5rem);
+            line-height: 1.5;
+            margin-bottom: 2rem;
+            color: #fff;
+        }
+
+        .truth-highlight {
+            color: var(--accent);
+            font-style: italic;
+        }
+
+        /* Behaviour Change */
+        .behaviour-section {
+            text-align: left;
+        }
+
+        /* Footer/Ending */
+        .ending {
+            text-align: center;
+        }
+
+        .final-message {
+            font-size: 1.5rem;
+            margin-bottom: 2rem;
+            color: var(--accent);
+        }
+
+        /* Mobile Adjustments */
+        @media (max-width: 768px) {
+            .glass-card {
+                padding: 1.5rem;
+                margin: 1rem;
+            }
+
+            .card-content {
+                font-size: 1.1rem;
+            }
+
+            .nav-bar {
+                top: 1rem;
+                right: 1rem;
+            }
+        }
+
+        /* Overlay */
+        #entry-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            z-index: 9999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 1.5s ease;
+        }
+
+        .enter-btn {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: #fff;
+            padding: 1rem 3rem;
+            font-family: 'Playfair Display', serif;
+            font-size: 1.2rem;
+            letter-spacing: 3px;
+            cursor: pointer;
+            transition: all 0.5s ease;
+            text-transform: uppercase;
+        }
+
+        .enter-btn:hover {
+            border-color: #fff;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+            letter-spacing: 5px;
+        }
+
+        #youtube-player {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+            z-index: -1;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Entry Overlay -->
+    <div id="entry-overlay">
+        <button class="enter-btn" id="startBtn">Enter Story</button>
+    </div>
+
+    <!-- Hidden YouTube Player -->
+    <div id="youtube-player"></div>
+
+    <div id="canvas-container">
+        <canvas id="bgCanvas"></canvas>
+    </div>
+
+
+
+    <main class="scroll-content">
+        <!-- Welcome -->
+        <section class="hero" id="home">
+            <h1 class="hero-title">
+                <span class="highlight-name">Yamuna</span>…<br>
+                I didn’t do this to show pain or weakness..<br>
+                I did this because what I felt for you wasn’t fake… it was real.
+            </h1>
+            <p class="hero-subtitle">
+                And real things deserve to be spoken clearly.
+            </p>
+            <a href="#section1" class="cta-btn">See..❤️</a>
+        </section>
+
+        <!-- Story 1 -->
+        <section id="section1">
+            <div class="story-container">
+                <div class="glass-card">
+                    <p class="card-content">
+                        “<span class="highlight-name">Yamuna</span>…<br>
+                        I don’t collect people in my life randomly.<br>
+                        I don’t attach easily.<br>
+                        And I don’t feel deeply for everyone.<br><br>
+                        If I felt something strong for you…<br>
+                        it’s because you were not just ‘anyone’ to me.<br><br>
+                        You were genuinely special.”
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Story 2 -->
+        <section id="section2">
+            <div class="story-container">
+                <div class="glass-card">
+                    <p class="card-content">
+                        “<span class="highlight-name">Yamuna</span>…<br>
+                        Those 3 days we stayed together in Hyderabad…<br>
+                        they weren’t just normal days for me.<br><br>
+
+                        We didn’t do anything grand…<br>
+                        but being with you… talking… travelling…<br>
+                        and even drinking together that night…<br>
+                        everything felt real and personal to me.<br><br>
+
+                        It wasn’t timepass.<br>
+                        It wasn’t just excitement.<br><br>
+
+                        It mattered…<br>
+                        only because <span class="highlight-name">you</span> mattered to me,<br>
+                        <span class="highlight-name">Yamuna</span>.”
+                    </p>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- Story 3 -->
+        <section id="section3">
+            <div class="story-container">
+                <div class="glass-card">
+                    <p class="card-content">
+                        “<span class="highlight-name">Yamuna</span>…<br>
+                        yes, you said you’re not interested.<br>
+                        yes, you chose distance.<br>
+                        yes, you pushed me away when I tried to come closer.<br><br>
+
+                        And I respected that.<br>
+                        Not because I was weak…<br>
+                        but because I value your comfort more than forcing myself into your life.<br><br>
+
+                        But remember one thing…<br>
+                        your decision didn’t reduce what I felt.<br>
+                        it didn’t make my feelings small.<br><br>
+
+                        What I felt for you<br>
+                        was never cheap…<br>
+                        never immature…<br>
+                        never meaningless.<br><br>
+
+                        It was strong.<br>
+                        it was real.<br>
+                        and it still carries its own value inside me,<br>
+                        <span class="highlight-name">Yamuna</span>.”
+                    </p>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- Story 4 -->
+        <section id="section4">
+            <div class="story-container">
+                <div class="glass-card">
+                    <p class="card-content">
+                        “<span class="highlight-name">Yamuna</span>…<br>
+                        if I became quiet now,<br>
+                        it is not fear.<br>
+                        It is not insecurity.<br>
+                        It is not weakness.<br><br>
+                        It is simply dignity.<br><br>
+                        I don’t force myself into anyone’s life.<br>
+                        But I also don’t erase my heart just because something didn’t go my way.<br><br>
+                        I chose silence<br>
+                        because strong feelings don’t need to shout every day.”
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Story 5 -->
+        <section id="section5">
+            <div class="story-container">
+                <div class="glass-card">
+                    <p class="card-content">
+                        “<span class="highlight-name">Yamuna</span>…<br>
+                        I’m not here to convince you.<br>
+                        I’m not here to beg for space.<br>
+                        I’m not here to prove my worth.<br><br>
+                        I already know what I felt was genuine.<br>
+                        And I’m proud of it.<br><br>
+                        You still matter to me.<br>
+                        Not in a dramatic way.<br>
+                        Not in a painful way.<br><br>
+                        In a real, quiet, honest way.”
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Behaviour Change (Previous "Emotional Truth") -->
+        <section class="emotional-truth" id="truth">
+            <div class="glass-card" style="background: rgba(0,0,0,0.4); border: 1px solid rgba(161, 140, 209, 0.2);">
+                <p class="truth-text">
+                    “<span class="highlight-name">Yamuna</span>…<br>
+                    yes, I’ve changed.<br><br>
+                    I don’t chase.<br>
+                    I don’t repeat “I love you” 100 times.<br>
+                    I don’t keep explaining myself.
+                </p>
+                <p class="truth-text" style="font-size: 1.5rem; margin-top: 2rem;">
+                    Now I just stay calm.<br>
+                    <span class="truth-highlight">Controlled. Steady.</span>
+                </p>
+                <p class="truth-text" style="font-size: 1.8rem; margin-top: 3rem; color: #fff;">
+                    Because I realised something beautiful, <br>
+                    when someone truly matters to your heart,<br>
+                    you don’t force them to stay… you just feel them quietly.<br><br>
+
+                    <span class="truth-highlight">
+                        I still care for you… deeply…<br>
+                        but now, I choose to love you with dignity, not desperation.
+                    </span>”
+                </p>
+
+            </div>
+        </section>
+
+
+        <!-- Behaviour Change (Removed redundant section, merged into Emotional Truth per new flow) -->
+        <!--  The new flow basically replaced the old "Emotional Truth" with the new Behaviour Change text, 
+              so I have updated the section above with id="truth" to contain the "I've changed" text 
+              and I am removing this redundant separate behaviour section. -->
+
+        <!-- Final Ending -->
+        <section class="ending" id="final">
+            <h2 class="hero-title" style="font-size: 3rem;">Happy New Year Yamuna ✨</h2>
+            <p class="hero-subtitle">
+                I’m still here…<br>
+                Not desperate. Not broken. Not gone.<br><br>
+                Just someone who once felt something real for you…<br>
+                and still carries that with strength, not weakness.
+            </p>
+            <br>
+            <button class="cta-btn" onclick="alert('Love You Papa🥲❤️')">❤️ Yamuna ❤️</button>
+        </section>
+    </main>
+
+    <script>
+        // 1. Initialize Lenis Smooth Scroll
+        const lenis = new Lenis({
+            duration: 1.5,
+            easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+            direction: 'vertical',
+            smooth: true,
+        });
+
+        function raf(time) {
+            lenis.raf(time);
+            requestAnimationFrame(raf);
+        }
+        requestAnimationFrame(raf);
+
+        // 2. Setup Canvas Particles
+        const canvas = document.getElementById('bgCanvas');
+        const ctx = canvas.getContext('2d');
+        let width, height;
+        let particles = [];
+
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                this.size = Math.random() * 2 + 0.5;
+                this.speedX = Math.random() * 0.5 - 0.25;
+                this.speedY = Math.random() * 0.5 - 0.25;
+                this.opacity = Math.random() * 0.5 + 0.1;
+            }
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                if (this.x > width) this.x = 0;
+                if (this.x < 0) this.x = width;
+                if (this.y > height) this.y = 0;
+                if (this.y < 0) this.y = height;
+            }
+            draw() {
+                ctx.fillStyle = `rgba(161, 140, 209, ${this.opacity})`;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        // Create 100 particles
+        for (let i = 0; i < 100; i++) {
+            particles.push(new Particle());
+        }
+
+        function animateCanvas() {
+            ctx.clearRect(0, 0, width, height);
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+            requestAnimationFrame(animateCanvas);
+        }
+        animateCanvas();
+
+        // 3. GSAP Animations
+        gsap.registerPlugin(ScrollTrigger);
+
+        // Animate Sections on Enter
+        gsap.utils.toArray('section').forEach((section, i) => {
+            gsap.fromTo(section,
+                { opacity: 0, y: 50 },
+                {
+                    opacity: 1,
+                    y: 0,
+                    duration: 1.5,
+                    ease: "power3.out",
+                    scrollTrigger: {
+                        trigger: section,
+                        start: "top 75%",
+                        end: "top 20%",
+                        toggleActions: "play none none reverse"
+                    }
+                }
+            );
+        });
+
+        // Parallax Effect for Cards
+        gsap.utils.toArray('.glass-card').forEach((card) => {
+            gsap.to(card, {
+                y: -30,
+                ease: "none",
+                scrollTrigger: {
+                    trigger: card,
+                    start: "top bottom",
+                    end: "bottom top",
+                    scrub: true
+                }
+            });
+        });
+
+        // 4. YouTube Audio Controls
+        const startBtn = document.getElementById('startBtn');
+        const overlay = document.getElementById('entry-overlay');
+        let player;
+        let isMusicPlaying = false;
+
+        // Load YouTube API
+        var tag = document.createElement('script');
+        tag.src = "https://www.youtube.com/iframe_api";
+        var firstScriptTag = document.getElementsByTagName('script')[0];
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+        // Make function global so API can find it
+        window.onYouTubeIframeAPIReady = function () {
+            player = new YT.Player('youtube-player', {
+                height: '1',
+                width: '1',
+                videoId: 'zgaCZOQCpp8', // Lady Gaga, Bruno Mars - Die With A Smile
+                playerVars: {
+                    'autoplay': 0,
+                    'controls': 0,
+                    'loop': 1,
+                    'playlist': 'zgaCZOQCpp8',
+                    'playsinline': 1,
+                    'rel': 0
+                },
+                events: {
+                    'onReady': onPlayerReady,
+                    'onError': onPlayerError
+                }
+            });
+        };
+
+        function onPlayerReady(event) {
+            console.log("Player Ready");
+            // Optional: Mute first to allow autoplay policies if needed later
+            // event.target.mute(); 
+        }
+
+        function onPlayerError(event) {
+            console.error("YouTube Player Error:", event.data);
+        }
+
+        // Handle Enter Button
+        startBtn.addEventListener('click', () => {
+            overlay.style.opacity = '0';
+            setTimeout(() => {
+                overlay.style.display = 'none';
+            }, 1500);
+
+            // Start animations/Music
+            if (player && typeof player.playVideo === 'function') {
+                player.setVolume(100);
+                player.unMute();
+                player.playVideo();
+                isMusicPlaying = true;
+            } else {
+                console.log("Player not ready yet");
+            }
+        });
+
+
+
+        // 5. Smooth Scroll to Link (Internal)
+        document.querySelector('.cta-btn').addEventListener('click', (e) => {
+            e.preventDefault();
+            lenis.scrollTo('#section1');
+        });
+
+    </script>
+</body>
+
+</html>
